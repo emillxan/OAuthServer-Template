@@ -1,0 +1,30 @@
+﻿@model OAuthServer.ViewModels.RegisterViewModel
+<h1>Register</h1>
+
+
+<form asp-controller="Account" asp-action="Register" method="post">
+    <input hidden asp-for="ReturnUrl" />
+    <div>
+        <label>UserName</label>
+        <input asp-for="UserName" />
+        <span asp-validation-for="UserName"></span>
+    </div>
+    <div>
+        <label>Password</label>
+        <input asp-for="Password" />
+        <span asp-validation-for="Password"></span>
+    </div>
+    <div>
+        <label>Password Confirm</label>
+        <input asp-for="PasswordConfirm" />
+        <span asp-validation-for="PasswordConfirm"></span>
+    </div>
+    <div>
+        <label>Email</label>
+        <input asp-for="Email" />
+        <span asp-validation-for="Email"></span>
+    </div>
+    <p>
+        <button type="submit">Register in</button>
+    </p>
+</form>
