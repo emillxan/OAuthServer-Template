@@ -19,10 +19,9 @@ namespace OAuthServer
                     AllowedCorsOrigins = {"https://localhost:7185"},
                     AllowedScopes =
                     {
-                        "ForumAPI",
+                        "ClientAPI",
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.Email
                     },
 
                     RedirectUris = { "https://localhost:7185/signin-oidc" },
@@ -35,12 +34,34 @@ namespace OAuthServer
 
                     AllowOfflineAccess = true,
                 },
+                new Client
+                {
+                    ClientId = "interactive.public",
+                    ClientName = "Interactive client (Code with PKCE)",
+
+                    RedirectUris = { "https://notused" },
+                    PostLogoutRedirectUris = { "https://notused" },
+
+                    RequireClientSecret = false,
+
+                    AllowedGrantTypes = GrantTypes.Code,
+                    AllowedScopes =
+                    {
+                        "ClientAPI",
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                    },
+
+                    AllowOfflineAccess = true,
+                    RefreshTokenUsage = TokenUsage.OneTimeOnly,
+                    RefreshTokenExpiration = TokenExpiration.Sliding
+                },
             };
 
         public static IEnumerable<ApiResource> GetApiResources() =>
             new List<ApiResource>
             {
-                new ApiResource("OrdersAPI")
+                new ApiResource("ClientAPI")
             };
 
         public static IEnumerable<IdentityResource> GetIdentityResources() =>

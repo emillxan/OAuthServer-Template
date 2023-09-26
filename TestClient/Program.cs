@@ -1,4 +1,5 @@
 using IdentityServer4.AccessTokenValidation;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -17,26 +18,28 @@ builder.Services.AddDbContext<DbContext>(options =>
 
 builder.Services.AddAuthentication(config =>
 {
-    config.DefaultScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
-    config.DefaultChallengeScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
-    config.DefaultAuthenticateScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
+    //IdentityServerAuthenticationDefaults
+    config.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    config.DefaultChallengeScheme = "oidc";
+    //config.DefaultAuthenticateScheme = IdentityServerAuthenticationDefaults.AuthenticationScheme;
 })
-    .AddJwtBearer("Bearer", config =>
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+/*    .AddJwtBearer("Bearer", config =>
     {
-        //config.ApiName = "ForumAPI";
+        // config.ApiName = "ClientAPI";
         config.Authority = "https://localhost:7060";
-        config.Audience = "ForumAPI";
+        config.Audience = "ClientAPI";
         config.RequireHttpsMetadata = false;
         config.TokenValidationParameters = new TokenValidationParameters()
         {
             ValidateAudience = false
         };
-    })
+    })*/
     .AddOpenIdConnect("oidc", config =>
     {
         config.Authority = "https://localhost:7060";
-        config.ClientId = "client_doubles_forum";
-        config.ClientSecret = "client_secret_forum";
+        config.ClientId = "test_client_id";
+        config.ClientSecret = "test_client_secret";
         config.SaveTokens = true;
 
         IdentityModelEventSource.ShowPII = true;
@@ -46,10 +49,10 @@ builder.Services.AddAuthentication(config =>
             ValidateAudience = false
         };
 
-        config.ResponseType = "code id_token";
+        config.ResponseType = "code";
         config.GetClaimsFromUserInfoEndpoint = true;
 
-        //config.Scope.Add("DoublesAPI");
+        //config.Scope.Add("ClientAPI");
         //config.Scope.Add("offine_access");
 
         //config.GetClaimsFromUserInfoEndpoint = true;
@@ -58,10 +61,6 @@ builder.Services.AddAuthentication(config =>
         //config.ClaimActions.MapJsonKey()
     });
 
-builder.Services.AddAuthorization(config =>
-{
-
-});
 
 var app = builder.Build();
 

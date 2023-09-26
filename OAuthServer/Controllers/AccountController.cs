@@ -69,36 +69,36 @@ public class AccountController : Controller
     [HttpPost]
     [Route("[action]")]
     public async Task<IActionResult> Login(LoginViewModel model)
+    {
+        try
         {
-            try
+            /*if (!ModelState.IsValid)
             {
-                /*if (!ModelState.IsValid)
-                {
-                return View(model);
-                }*/
-                var user = await _userManager.FindByNameAsync(model.UserName);
-                if (user == null)
-                {
-                    ModelState.AddModelError("UserName", "User not found");
-                    return View(model);
-                }
-
-                var signinResult = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
-                if (signinResult.Succeeded)
-                {
-                    if(model.ReturnUrl != null)
-                        return Redirect(model.ReturnUrl);
-                    return View();
-                }
-                ModelState.AddModelError("UserName", "Something not found");
-
+            return View(model);
+            }*/
+            var user = await _userManager.FindByNameAsync(model.UserName);
+            if (user == null)
+            {
+                ModelState.AddModelError("UserName", "User not found");
                 return View(model);
             }
-            catch(Exception ex)
+
+            var signinResult = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
+            if (signinResult.Succeeded)
             {
-                return View("Error", new ErorViewModel { Discruption = $"[Login Post Error] : {ex.Message}" });
+                if(model.ReturnUrl != null)
+                    return Redirect(model.ReturnUrl);
+                return View();
             }
+            ModelState.AddModelError("UserName", "Something not found");
+
+            return View(model);
         }
+        catch(Exception ex)
+        {
+            return View("Error", new ErorViewModel { Discruption = $"[Login Post Error] : {ex.Message}" });
+        }
+    }
 
     #endregion
 
