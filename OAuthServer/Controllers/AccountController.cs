@@ -1,5 +1,4 @@
-﻿using IdentityModel;
-using IdentityServer4.Services;
+﻿using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OAuthServer.Entities;
@@ -41,13 +40,13 @@ public class AccountController : Controller
     /// <returns></returns>
     [HttpGet]
     [Route("[action]")]
-    public async Task<IActionResult> Login(string returnUrl)
+    public async Task<IActionResult> Login(string returnUrl) 
     {
+        if (returnUrl == null)
+            return View("Error", new ErorViewModel { Discruption = "[Login Get Error] : ReturnUrl is null" });
+
         try
         {
-            if (returnUrl == null)
-                return View("Error", new ErorViewModel { Discruption = "[Login Get Error] : ReturnUrl is null"});
-
             var externalProviders = await _signInManager.GetExternalAuthenticationSchemesAsync();
             return View(new LoginViewModel
             {
@@ -107,19 +106,13 @@ public class AccountController : Controller
     [Route("[action]")]
     public IActionResult Register(string returnUrl)
     {
-        try
+        if (returnUrl == null)
+            return View("Error", new ErorViewModel { Discruption = "[Register Get Error] : ReturnUrl is null" });
+        
+        return View(new RegisterViewModel
         {
-            if (returnUrl == null)
-                return View("Error", new ErorViewModel { Discruption = "[Register Get Error] : ReturnUrl is null" });
-            return View(new RegisterViewModel
-            {
-                ReturnUrl = returnUrl
-            });
-        }
-        catch (Exception ex)
-        {
-            return View("Error", new ErorViewModel { Discruption = $"[Register Get Error] : {ex.Message}" });
-        }
+            ReturnUrl = returnUrl
+        });
     }
     
     [HttpPost]
@@ -159,7 +152,7 @@ public class AccountController : Controller
             // await _userManager.AddToRoleAsync(newUser, "Visitor");
 
             if (createUser.Succeeded)
-                return RedirectToAction("Login", new { returnUrl = model.ReturnUrl});
+                return RedirectToAction("NeedConfirmEmail", new { returnUrl = model.ReturnUrl});
 
             return View(model);
         }
@@ -168,26 +161,34 @@ public class AccountController : Controller
             return View(ex.Message);
         }
     }
-    
+
+    [HttpGet]
+    [Route("[action]")]
+    public IActionResult NeedConfirmEmail(string returnUrl)
+    {
+        if (returnUrl == null)
+            return View("Error", new ErorViewModel { Discruption = "[NeedConfirmEmail Get Error] : ReturnUrl is null" });
+
+        return View(new LoginViewModel { ReturnUrl = returnUrl});
+    }
+
     [HttpGet]
     [Route("[action]")]
     public async Task<IActionResult> ConfirmEmail(string mailToken, string userName)
     {
+        if (mailToken == null || userName == null)
+            return View("Error", new ErorViewModel { Discruption = "[ConfirmEmail Get Error] : Mail-Token or User Name is null" });
+
         try
         {
-            if (mailToken == null)
-                return View("Error", new ErorViewModel { Discruption = "[ConfirmEmail Get Error] : Mail-Token is null" });
-
             var user = await _userManager.FindByNameAsync(userName);
             if (user == null) 
                 return View("Error", new ErorViewModel { Discruption = "[ConfirmEmail Get Error] : User is null" });
 
             var result = await _userManager.ConfirmEmailAsync(user, mailToken);
-
             if (result.Succeeded)
-            {
                 return View();
-            }
+
             return View("Error", new ErorViewModel { Discruption = "[ConfirmEmail Get Error] : Confirm Error" });
         }
         catch(Exception ex)
@@ -196,7 +197,6 @@ public class AccountController : Controller
         }
     }
 
-
     #endregion
 
     #region [Logout]
@@ -204,17 +204,16 @@ public class AccountController : Controller
     [Route("[action]")]
     public async Task<IActionResult> Logout(string logoutId)
     {
+        if (logoutId == null)
+            return View("Error", new ErorViewModel { Discruption = $"[ConfirmEmail Get Error] : Logout Id is null" });
+
         try
         {
-            if(logoutId == null) 
-                return View("Error", new ErorViewModel { Discruption = $"[ConfirmEmail Get Error] : Logout Id is null" });
-
             await _signInManager.SignOutAsync();
             var logoutResult = await _interactionService.GetLogoutContextAsync(logoutId);
             if (logoutResult != null)
-            {
                 return Redirect("../Home");
-            }
+
             return Redirect("../Home");
         }
         catch (Exception ex)
@@ -272,20 +271,13 @@ public class AccountController : Controller
     [Route("[action]")]
     public IActionResult ResetPassword(string token, string email)
     {
-        try
-        {
-            if (token == null)
-                return View("Error", new ErorViewModel { Discruption = "[ResetPassword Get Error] : Token is null" });
-            if (email == null)
-                return View("Error", new ErorViewModel { Discruption = "[ResetPassword Get Error] : Email is null" });
+        if (token == null)
+            return View("Error", new ErorViewModel { Discruption = "[ResetPassword Get Error] : Token is null" });
+        if (email == null)
+            return View("Error", new ErorViewModel { Discruption = "[ResetPassword Get Error] : Email is null" });
 
-            var model = new ResetPasswordViewModel { Token = token, Email = email };
-            return View(model);
-        }
-        catch (Exception ex)
-        {
-            return View("Error", new ErorViewModel { Discruption = $"[ResetPassword Get Error] : {ex.Message}" });
-        }
+        var model = new ResetPasswordViewModel { Token = token, Email = email };
+        return View(model);
     }
 
     [HttpPost]
@@ -334,13 +326,13 @@ public class AccountController : Controller
     [Route("[action]")]
     public IActionResult ExternalLogin(string provider, string returnUrl)
     {
+        if (provider == null)
+            return View("Error", new ErorViewModel { Discruption = "[ExternalLogin Get Error] : Provider is null" });
+        if (provider == null)
+            return View("Error", new ErorViewModel { Discruption = "[ExternalLogin Get Error] : ReturnUrl is null" });
+
         try
         {
-            if (provider == null)
-                return View("Error", new ErorViewModel { Discruption = "[ExternalLogin Get Error] : Provider is null" });
-            if (provider == null)
-                return View("Error", new ErorViewModel { Discruption = "[ExternalLogin Get Error] : ReturnUrl is null" });
-
             var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(properties, provider);
@@ -354,22 +346,18 @@ public class AccountController : Controller
     [Route("[action]")]
     public async Task<IActionResult> ExternalLoginCallback(string returnUrl)
     {
+        if (returnUrl == null)
+            return View("Error", new ErorViewModel { Discruption = "[ExternalLoginCallback Get Error] : ReturnUrl is null" });
+
         try
         {
-            if (returnUrl == null)
-                return View("Error", new ErorViewModel { Discruption = "[ExternalLoginCallback Get Error] : ReturnUrl is null" });
-
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
-            {
                 return RedirectToAction("Login");
-            }
 
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false, false);
-            if (result.Succeeded)
-            {
-                return RedirectToAction("Index");
-            }
+            if (result.Succeeded)           
+                return RedirectToAction("Index");           
 
             return RedirectToAction("RegisterExternal", new ExternalLoginViewModel
             {
@@ -399,17 +387,12 @@ public class AccountController : Controller
         {
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
-            {
                 return RedirectToAction("Login");
-            }
 
             var user = new ApplicationUser(model.UserName);
-
             var result = await _userManager.CreateAsync(user);
-
             if (result.Succeeded)
             {
-
                 var claimsResult = await _userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "Administrator"));
                 if (claimsResult.Succeeded)
                 {
