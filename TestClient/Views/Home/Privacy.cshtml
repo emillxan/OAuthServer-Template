@@ -1,6 +1,104 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
-}
-<h1>@ViewData["Title"]</h1>
+﻿@using System.Security.Claims;
+@using TestClient.Services;
+@model TestClient.Services.ClaimManager
+<style>
+    body {
+        background-color: #f1f1f1;
+    }
 
-<p>Use this page to detail your site's privacy policy.</p>
+    .content {
+        width: 100%;
+        padding: .5em;
+        display: flex;
+        flex-direction: row;
+        font-family: sans-serif;
+    }
+
+    .column {
+        flex: 1 1 0;
+        margin: 0 2px;
+    }
+
+    .title {
+        font-weight: bold;
+        color: black;
+        border: 1px solid #ccc;
+        padding: 2px;
+        margin: 1px;
+        text-align: right;
+        width: 7em;
+        overflow: hidden;
+        background-color: #fefefe;
+        display: inline-block;
+    }
+
+    .value {
+        color: black;
+        border: 1px solid #ccc;
+        padding: 1px 5px;
+        margin: 1px;
+        min-width: 20em;
+        max-width: 20em;
+        overflow: hidden;
+        display: inline-block;
+        color: #123ab8;
+    }
+
+    span {
+        background-color: #fff;
+    }
+
+    h3 {
+        padding: .5em;
+        background-color: #cd37c3;
+        color: white;
+    }
+
+        h3 b {
+            color: yellow;
+        }
+</style>
+
+<h1>Secret</h1>
+
+
+<p>
+    @ViewBag.Message
+</p>
+
+<div class="content">
+    @foreach (var item in Model.Items)
+    {
+        <div class="column">
+
+            <h3>
+                @item.Name <b>@GetClaims(item).Count</b>
+            </h3>
+
+            <div>
+                <p>
+                    <textarea rows="10" cols="62" asp-for="@item.Token"></textarea>
+                </p>
+            </div>
+
+
+            @foreach (var claim in GetClaims(item))
+            {
+                <span class="title" title="@claim.Type">@claim.Type:</span>
+                <span class="value" title="@claim.Value">@claim.Value</span><br />
+            }
+        </div>
+    }
+</div>
+
+@functions
+{
+    public List<Claim> GetClaims(ClaimViewer item)
+    {
+        if (item.Claims != null && item.Claims.Count > 0)
+        {
+            return item.Claims;
+        }
+        return new List<Claim>();
+    }
+}
